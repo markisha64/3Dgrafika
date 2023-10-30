@@ -24,8 +24,26 @@ struct Face<'a> {
 
 #[derive(Debug)]
 struct Obj<'a> {
-    verices: Vec<Vertex>,
+    vertices: Vec<Vertex>,
     faces: Vec<Face<'a>>,
+}
+
+impl<'a> Obj<'a> {
+    fn to_obj(&'a mut self) -> String {
+        let mut output: Vec<String> = Vec::new();
+
+        let len = self.vertices.len();
+
+        for i in 0..len {
+            self.vertices[i].index = i as u32;
+        }
+
+        for vertex in self.vertices.iter() {
+            output.push(format!("v {} {} {}", vertex.x, vertex.y, vertex.z));
+        }
+
+        output.join("\n")
+    }
 }
 
 const RADIJUS: f32 = 1.0;
@@ -63,5 +81,10 @@ fn main() {
         }
     }
 
-    dbg!(base);
+    let mut obj = Obj {
+        vertices: base,
+        faces: Vec::new(),
+    };
+
+    println!("{}", obj.to_obj());
 }
