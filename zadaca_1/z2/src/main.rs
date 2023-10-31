@@ -1,12 +1,4 @@
-use clap::Parser;
 use std::fs;
-
-#[derive(Parser, Debug)]
-struct Args {
-    /// preciznost u dijelovima, vece -> bolje
-    #[arg(short, long)]
-    precision: u32,
-}
 
 #[derive(Debug, Clone)]
 struct Vertex {
@@ -52,49 +44,36 @@ impl<'a> Obj<'a> {
 
 const RADIJUS: f32 = 1.0;
 const VISINA: f32 = 2.0;
+const PRECIZNOST: u32 = 100;
 
 fn main() {
-    let args = Args::parse();
-
-    if args.precision <= 1 {
-        panic!("Preciznost more biti veca od 1")
-    }
-
-    let promjer = RADIJUS * 2.0;
-    let dio = promjer / (args.precision as f32);
+    let kut_podijela = 2.0 * std::f32::consts::PI / PRECIZNOST as f32;
 
     let mut base: Vec<Vertex> = Vec::new();
-    let mut negative_z: Vec<Vertex> = Vec::new();
-    for i in 0..args.precision + 1 {
-        let x = (i as f32) * dio - RADIJUS;
-        let z = (RADIJUS * RADIJUS - x * x).sqrt();
+    for i in 0..PRECIZNOST {
+        let kut = kut_podijela * i as f32;
 
         base.push(Vertex {
-            x,
+            x: RADIJUS * kut.cos(),
             y: 0.0,
-            z,
+            z: RADIJUS * kut.sin(),
             index: 0,
         });
-
-        if x != RADIJUS && x != -RADIJUS {
-            negative_z.push(Vertex {
-                x,
-                y: 0.0,
-                z: -z,
-                index: 0,
-            });
-        }
     }
 
-    negative_z.reverse();
-
-    base.extend(negative_z);
+    let mut base1 = base.clone();
 
     let mut faces: Vec<Face> = Vec::new();
 
     let len = base.len();
 
-    for i in 0..len {
+    for vertex in &mut base1 {
+        vertex.y = VISINA;
+    }
+
+    base.extend(base1);
+
+    for i in 0..base.len() {
         base[i].index = i as u32;
     }
 
@@ -105,6 +84,40 @@ fn main() {
             vertex_3: &base[i + 1],
         })
     }
+
+    for i in 1..len - 1 {
+        faces.push(Face {
+            vertex_1: &base[len],
+            vertex_2: &base[len + i],
+            vertex_3: &base[len + i + 1],
+        })
+    }
+
+    for i in 0..len - 1 {
+        faces.push(Face {
+            vertex_1: &base[i],
+            vertex_2: &base[i + 1],
+            vertex_3: &base[len + i],
+        });
+
+        faces.push(Face {
+            vertex_1: &base[i + 1],
+            vertex_2: &base[(len + i) % (len * 2 - 1) + 1],
+            vertex_3: &base[len + i],
+        });
+    }
+
+    faces.push(Face {
+        vertex_1: &base[len - 1],
+        vertex_2: &base[len + len - 1],
+        vertex_3: &base[0],
+    });
+
+    faces.push(Face {
+        vertex_1: &base[len],
+        vertex_2: &base[len + len - 1],
+        vertex_3: &base[0],
+    });
 
     let mut obj = Obj {
         vertices: &base,
