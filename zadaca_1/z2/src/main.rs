@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::fs;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -7,7 +8,7 @@ struct Args {
     precision: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Vertex {
     x: f32,
     y: f32,
@@ -24,7 +25,7 @@ struct Face<'a> {
 
 #[derive(Debug)]
 struct Obj<'a> {
-    vertices: Vec<Vertex>,
+    vertices: &'a Vec<Vertex>,
     faces: Vec<Face<'a>>,
 }
 
@@ -32,14 +33,17 @@ impl<'a> Obj<'a> {
     fn to_obj(&'a mut self) -> String {
         let mut output: Vec<String> = Vec::new();
 
-        let len = self.vertices.len();
-
-        for i in 0..len {
-            self.vertices[i].index = i as u32;
-        }
-
         for vertex in self.vertices.iter() {
             output.push(format!("v {} {} {}", vertex.x, vertex.y, vertex.z));
+        }
+
+        for face in self.faces.iter() {
+            output.push(format!(
+                "f {} {} {}",
+                face.vertex_1.index + 1,
+                face.vertex_2.index + 1,
+                face.vertex_3.index + 1
+            ));
         }
 
         output.join("\n")
@@ -60,6 +64,7 @@ fn main() {
     let dio = promjer / (args.precision as f32);
 
     let mut base: Vec<Vertex> = Vec::new();
+    let mut negative_z: Vec<Vertex> = Vec::new();
     for i in 0..args.precision + 1 {
         let x = (i as f32) * dio - RADIJUS;
         let z = (RADIJUS * RADIJUS - x * x).sqrt();
@@ -72,7 +77,7 @@ fn main() {
         });
 
         if x != RADIJUS && x != -RADIJUS {
-            base.push(Vertex {
+            negative_z.push(Vertex {
                 x,
                 y: 0.0,
                 z: -z,
@@ -81,10 +86,30 @@ fn main() {
         }
     }
 
+    negative_z.reverse();
+
+    base.extend(negative_z);
+
+    let mut faces: Vec<Face> = Vec::new();
+
+    let len = base.len();
+
+    for i in 0..len {
+        base[i].index = i as u32;
+    }
+
+    for i in 1..len - 1 {
+        faces.push(Face {
+            vertex_1: &base[0],
+            vertex_2: &base[i],
+            vertex_3: &base[i + 1],
+        })
+    }
+
     let mut obj = Obj {
-        vertices: base,
-        faces: Vec::new(),
+        vertices: &base,
+        faces,
     };
 
-    println!("{}", obj.to_obj());
+    fs::write("cilindar.obj", obj.to_obj()).unwrap();
 }
