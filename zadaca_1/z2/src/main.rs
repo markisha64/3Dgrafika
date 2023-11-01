@@ -8,6 +8,13 @@ struct Vertex {
     index: u32,
 }
 
+#[derive(Debug, Clone)]
+struct Normal {
+    x: f32,
+    y: f32,
+    z: f32,
+}
+
 #[derive(Debug)]
 struct Face<'a> {
     vertex_1: &'a Vertex,
@@ -18,6 +25,7 @@ struct Face<'a> {
 #[derive(Debug)]
 struct Obj<'a> {
     vertices: &'a Vec<Vertex>,
+    normals: Vec<Normal>,
     faces: Vec<Face<'a>>,
 }
 
@@ -27,6 +35,10 @@ impl<'a> Obj<'a> {
 
         for vertex in self.vertices.iter() {
             output.push(format!("v {} {} {}", vertex.x, vertex.y, vertex.z));
+        }
+
+        for normal in self.normals.iter() {
+            output.push(format!("vn {} {} {}", normal.x, normal.y, normal.z));
         }
 
         for face in self.faces.iter() {
@@ -75,6 +87,40 @@ fn main() {
 
     for vertex in &mut base_top_copy {
         vertex.y = VISINA;
+    }
+
+    let mut normals: Vec<Normal> = Vec::new();
+
+    for _ in base.iter() {
+        normals.push(Normal {
+            x: 0.0,
+            y: -1.0,
+            z: 0.0,
+        });
+    }
+
+    for _ in base_top.iter() {
+        normals.push(Normal {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        });
+    }
+
+    for vertex in base_copy.iter() {
+        normals.push(Normal {
+            x: vertex.x,
+            y: vertex.y,
+            z: vertex.z,
+        });
+    }
+
+    for vertex in base_top_copy.iter() {
+        normals.push(Normal {
+            x: vertex.x,
+            y: vertex.y - 2.0,
+            z: vertex.z,
+        });
     }
 
     base.extend(base_top);
@@ -129,6 +175,7 @@ fn main() {
 
     let mut obj = Obj {
         vertices: &base,
+        normals,
         faces,
     };
 
