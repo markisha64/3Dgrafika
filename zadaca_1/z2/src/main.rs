@@ -43,9 +43,12 @@ impl<'a> Obj<'a> {
 
         for face in self.faces.iter() {
             output.push(format!(
-                "f {} {} {}",
+                "f {}//{} {}//{} {}//{}",
+                face.vertex_1.index + 1,
                 face.vertex_1.index + 1,
                 face.vertex_2.index + 1,
+                face.vertex_2.index + 1,
+                face.vertex_3.index + 1,
                 face.vertex_3.index + 1
             ));
         }
@@ -110,7 +113,7 @@ fn main() {
     for vertex in base_copy.iter() {
         normals.push(Normal {
             x: vertex.x,
-            y: vertex.y,
+            y: 0.0,
             z: vertex.z,
         });
     }
@@ -118,7 +121,7 @@ fn main() {
     for vertex in base_top_copy.iter() {
         normals.push(Normal {
             x: vertex.x,
-            y: vertex.y - 2.0,
+            y: 0.0,
             z: vertex.z,
         });
     }
@@ -142,16 +145,16 @@ fn main() {
     for i in 1..len - 1 {
         faces.push(Face {
             vertex_1: &base[len],
-            vertex_2: &base[len + i],
-            vertex_3: &base[len + i + 1],
+            vertex_2: &base[len + i + 1],
+            vertex_3: &base[len + i],
         })
     }
 
     for i in 0..len - 1 {
         faces.push(Face {
             vertex_1: &base[len * 2 + i],
-            vertex_2: &base[len * 2 + i + 1],
-            vertex_3: &base[len * 3 + i],
+            vertex_2: &base[len * 3 + i],
+            vertex_3: &base[len * 2 + i + 1],
         });
 
         faces.push(Face {
@@ -169,8 +172,8 @@ fn main() {
 
     faces.push(Face {
         vertex_1: &base[len * 3],
-        vertex_2: &base[len * 4 - 1],
-        vertex_3: &base[len * 2],
+        vertex_2: &base[len * 2],
+        vertex_3: &base[len * 4 - 1],
     });
 
     let mut obj = Obj {
