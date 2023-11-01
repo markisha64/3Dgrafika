@@ -61,17 +61,25 @@ fn main() {
         });
     }
 
-    let mut base1 = base.clone();
+    let base_copy = base.clone();
+    let mut base_top = base.clone();
+    let mut base_top_copy = base.clone();
 
     let mut faces: Vec<Face> = Vec::new();
 
     let len = base.len();
 
-    for vertex in &mut base1 {
+    for vertex in &mut base_top {
         vertex.y = VISINA;
     }
 
-    base.extend(base1);
+    for vertex in &mut base_top_copy {
+        vertex.y = VISINA;
+    }
+
+    base.extend(base_top);
+    base.extend(base_copy);
+    base.extend(base_top_copy);
 
     for i in 0..base.len() {
         base[i].index = i as u32;
@@ -95,28 +103,28 @@ fn main() {
 
     for i in 0..len - 1 {
         faces.push(Face {
-            vertex_1: &base[i],
-            vertex_2: &base[i + 1],
-            vertex_3: &base[len + i],
+            vertex_1: &base[len * 2 + i],
+            vertex_2: &base[len * 2 + i + 1],
+            vertex_3: &base[len * 3 + i],
         });
 
         faces.push(Face {
-            vertex_1: &base[i + 1],
-            vertex_2: &base[(len + i) % (len * 2 - 1) + 1],
-            vertex_3: &base[len + i],
+            vertex_1: &base[len * 2 + i + 1],
+            vertex_2: &base[(len * 3 + i) % (len * 4 - 1) + 1],
+            vertex_3: &base[len * 3 + i],
         });
     }
 
     faces.push(Face {
-        vertex_1: &base[len - 1],
-        vertex_2: &base[len + len - 1],
-        vertex_3: &base[0],
+        vertex_1: &base[len * 3 - 1],
+        vertex_2: &base[len * 4 - 1],
+        vertex_3: &base[len * 2],
     });
 
     faces.push(Face {
-        vertex_1: &base[len],
-        vertex_2: &base[len + len - 1],
-        vertex_3: &base[0],
+        vertex_1: &base[len * 3],
+        vertex_2: &base[len * 4 - 1],
+        vertex_3: &base[len * 2],
     });
 
     let mut obj = Obj {
