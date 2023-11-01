@@ -59,7 +59,7 @@ impl<'a> Obj<'a> {
 
 const RADIJUS: f32 = 1.0;
 const VISINA: f32 = 2.0;
-const PRECIZNOST: u32 = 100;
+const PRECIZNOST: u32 = 1000;
 
 fn main() {
     let kut_podijela = 2.0 * std::f32::consts::PI / PRECIZNOST as f32;
@@ -159,8 +159,8 @@ fn main() {
 
         faces.push(Face {
             vertex_1: &base[len * 2 + i + 1],
-            vertex_2: &base[(len * 3 + i) % (len * 4 - 1) + 1],
-            vertex_3: &base[len * 3 + i],
+            vertex_2: &base[len * 3 + i],
+            vertex_3: &base[(len * 3 + i) % (len * 4 - 1) + 1],
         });
     }
 
