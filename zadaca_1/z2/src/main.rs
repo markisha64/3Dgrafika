@@ -59,6 +59,8 @@ impl<'a> Obj<'a> {
 
 const RADIJUS: f32 = 1.0;
 const VISINA: f32 = 2.0;
+
+const VISINA_POLA: f32 = VISINA / 2.0;
 const PRECIZNOST: u32 = 1000;
 
 fn main() {
@@ -70,7 +72,7 @@ fn main() {
 
         base.push(Vertex {
             x: RADIJUS * kut.cos(),
-            y: 0.0,
+            y: -VISINA_POLA,
             z: RADIJUS * kut.sin(),
             index: 0,
         });
@@ -85,11 +87,11 @@ fn main() {
     let len = base.len();
 
     for vertex in &mut base_top {
-        vertex.y = VISINA;
+        vertex.y = VISINA_POLA;
     }
 
     for vertex in &mut base_top_copy {
-        vertex.y = VISINA;
+        vertex.y = VISINA_POLA;
     }
 
     let mut normals: Vec<Normal> = Vec::new();
