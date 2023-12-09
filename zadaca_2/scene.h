@@ -114,11 +114,12 @@ class Scene
             }
 
             if (1 - hit_object->material.opacity && depth < MAX_DEPTH) {
-                Ray newRay(hit_point, ray.direction);
+                // fix hittanje istog objekta prozirnoscu
+                Ray newRay(hit_point + ray.direction * 0.001, ray.direction);
 
-                // Vec3f recResult = cast_ray(newRay, depth + 1);
+                Vec3f recResult = cast_ray(newRay, depth + 1);
 
-                // originalResult = originalResult+ recResult * (1 - hit_object->material.opacity); 
+                originalResult = originalResult * hit_object->material.opacity + recResult * (1 - hit_object->material.opacity); 
             }
             
             return originalResult;

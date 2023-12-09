@@ -27,8 +27,8 @@ Ray ray_to_pixel(Vec3f origin, const Image &img, int i, int j)
 void render(const Scene &scene)
 {
     // dimenzije slike
-    const int width = 1024;
-    const int height = 768;
+    const int width = 1920;
+    const int height = 1080;
     
     Vec3f origin = Vec3f(0, 0, 0);
     
@@ -57,7 +57,7 @@ int main()
     Material blue(Vec3f(0, 0, 1));
     Material grey(Vec3f(0.5, 0.5, 0.5));
     Material pink(Vec3f(0.39, 0.29, 0.31));
-    green.opacity = 0.1;
+    green.opacity = 0.2;
     pink.reflexivity = 0.4;
     
     Sphere s1(Vec3f(-3, 0, -16), 2, red);

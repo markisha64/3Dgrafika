@@ -10,7 +10,7 @@ class Material
     float specular_coef = 1;
     float phong_exp = 1000;
 
-    float reflexivity = 0.1;
+    float reflexivity = 0.001;
     float opacity = 1;
     
     Material() : diffuse_colour(Vec3f(0, 0, 0)) { }
