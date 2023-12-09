@@ -1,7 +1,10 @@
 #pragma once
+#include "geometry.h"
 #include "objects.h"
 #include "light.h"
 #include <vector>
+
+const int MAX_DEPTH = 3;
 
 class Scene 
 {
@@ -14,7 +17,7 @@ class Scene
         float t = -1;
         bool did_intersect = false;
         Vec3f normal;
-        
+
         for (auto obj: objects)
         {
             if (obj->ray_intersect(ray, t, normal))
@@ -88,7 +91,7 @@ class Scene
     }
     
   public:
-    Vec3f cast_ray(const Ray &ray) const
+    Vec3f cast_ray(const Ray &ray, int depth) const
     {
         Vec3f hit_point;
         Vec3f hit_normal;
@@ -100,8 +103,25 @@ class Scene
             float spec = 0;
             
             process_lights(hit_point, hit_normal, hit_object, ray, diff, spec);
+
+            Vec3f originalResult = hit_object->material.diffuse_colour * diff + Vec3f(1, 1, 1) * spec;
+            if (hit_object->material.reflexivity && depth < MAX_DEPTH) {
+                Ray newRay(hit_point, ray.direction - hit_normal * (ray.direction * hit_normal) * 2);
+
+                Vec3f recResult = cast_ray(newRay, depth + 1);
+
+                originalResult = originalResult * (1 - hit_object->material.reflexivity) + recResult * hit_object->material.reflexivity; 
+            }
+
+            if (1 - hit_object->material.opacity && depth < MAX_DEPTH) {
+                Ray newRay(hit_point, ray.direction);
+
+                // Vec3f recResult = cast_ray(newRay, depth + 1);
+
+                // originalResult = originalResult+ recResult * (1 - hit_object->material.opacity); 
+            }
             
-            return hit_object->material.diffuse_colour * diff + Vec3f(1, 1, 1) * spec;
+            return originalResult;
         }
         else
         {

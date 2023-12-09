@@ -40,7 +40,7 @@ void render(const Scene &scene)
         for (size_t i = 0; i < width; ++i)
         {
             Ray ray = ray_to_pixel(origin, img, i, j);
-            Vec3f colour = scene.cast_ray(ray);
+            Vec3f colour = scene.cast_ray(ray, 0);
             img.set_pixel(i, j, colour);
         }
     }
@@ -57,6 +57,8 @@ int main()
     Material blue(Vec3f(0, 0, 1));
     Material grey(Vec3f(0.5, 0.5, 0.5));
     Material pink(Vec3f(0.39, 0.29, 0.31));
+    green.opacity = 0.1;
+    pink.reflexivity = 0.4;
     
     Sphere s1(Vec3f(-3, 0, -16), 2, red);
     Sphere s2(Vec3f(-1, -1.5, -12), 2.1, green);
