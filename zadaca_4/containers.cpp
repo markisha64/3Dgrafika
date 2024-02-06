@@ -1,3 +1,5 @@
+#include "glm/fwd.hpp"
+#include "glm/geometric.hpp"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -6,7 +8,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <libraries/stb_image.h>
-#include <libraries/shader_m.h>
+#include <libraries/shader.h>
 
 #include <iostream>
 
@@ -16,6 +18,15 @@ void processInput(GLFWwindow *window);
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+glm::vec3 camPos(0.0f, 0.0f, 10.0f);
+glm::vec3 camTarget(0.0f, 0.0f, 9.0f);
+
+glm::vec3 camDirection = glm::normalize(camPos - camTarget);
+
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 camRight = glm::normalize(glm::cross(up, camDirection));
+glm::vec3 camUp = glm::cross(camDirection, camRight);
 
 int main()
 {
@@ -190,10 +201,10 @@ int main()
     // -----------------------------------------------------------------------------------------------------------
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     ourShader.setMat4("projection", projection);
-
+  
     // setup camera
     glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-    view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    view = glm::lookAt(camPos, camTarget, camUp);
     ourShader.setMat4("view", view);    
 
 
@@ -201,6 +212,8 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
+        view = glm::lookAt(camPos, camTarget, camUp);
+        ourShader.setMat4("view", view);    
         // input
         // -----
         processInput(window);
@@ -250,12 +263,43 @@ int main()
     return 0;
 }
 
+void recalcCamera() {
+    camDirection = glm::normalize(camPos - camTarget);
+
+    camRight = glm::normalize(glm::cross(up, camDirection));
+    camUp = glm::cross(camDirection, camRight);
+}
+
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+   
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camPos.z -= 1;
+        camTarget.z -= 1;
+        recalcCamera();
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camPos.z += 1;
+        camTarget.z += 1;
+        recalcCamera();
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camPos.x -= 1;
+        camTarget.x -= 1;
+        recalcCamera();
+    }
+    
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camPos.x += 1;
+        camTarget.x += 1;
+        recalcCamera();
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
