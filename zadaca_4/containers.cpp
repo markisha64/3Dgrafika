@@ -1,5 +1,6 @@
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+#include <cmath>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -12,21 +13,29 @@
 
 #include <iostream>
 
+void recalcCamera();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void mouse_callback(GLFWwindow* windows, double xpos, double ypos);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-glm::vec3 camPos(0.0f, 0.0f, 10.0f);
-glm::vec3 camTarget(0.0f, 0.0f, 9.0f);
+double startX = 90.0f;
+double startY = 180.0f;
 
-glm::vec3 camDirection = glm::normalize(camPos - camTarget);
+double camX, camY = 0;
+
+double sensitivity = 0.05f;
+float speed = 0.10f;
+
+glm::vec3 camPos(0.0f, 0.0f, 10.0f);
 
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 camRight = glm::normalize(glm::cross(up, camDirection));
-glm::vec3 camUp = glm::cross(camDirection, camRight);
+
+glm::vec3 camTarget, camDirection, camRight, camUp;
+
 
 int main()
 {
@@ -202,11 +211,15 @@ int main()
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     ourShader.setMat4("projection", projection);
   
+
+    recalcCamera();
     // setup camera
     glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     view = glm::lookAt(camPos, camTarget, camUp);
     ourShader.setMat4("view", view);    
 
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // render loop
     // -----------
@@ -264,10 +277,19 @@ int main()
 }
 
 void recalcCamera() {
-    camDirection = glm::normalize(camPos - camTarget);
+    double newX = startX + camX;
+    double newY = startY + camY;
+    
+    camDirection = glm::normalize(glm::vec3(
+        cos(glm::radians(newX)) * cos(glm::radians(newY)),
+        sin(glm::radians(newY)),
+        sin(glm::radians(newX)) * cos(glm::radians(newY))
+    ));
+
+    camTarget = camPos + camDirection;
 
     camRight = glm::normalize(glm::cross(up, camDirection));
-    camUp = glm::cross(camDirection, camRight);
+    camUp = up;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -278,26 +300,22 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camPos.z -= 1;
-        camTarget.z -= 1;
+        camPos += speed * camDirection;
         recalcCamera();
     }
     
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camPos.z += 1;
-        camTarget.z += 1;
+        camPos -= speed * camDirection;
         recalcCamera();
     }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camPos.x -= 1;
-        camTarget.x -= 1;
+        camPos += speed * camRight;
         recalcCamera();
     }
     
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camPos.x += 1;
-        camTarget.x += 1;
+        camPos -= speed * camRight;
         recalcCamera();
     }
 }
@@ -311,3 +329,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    camX = xpos * sensitivity;
+    camY = ypos * sensitivity;
+    recalcCamera();
+}
